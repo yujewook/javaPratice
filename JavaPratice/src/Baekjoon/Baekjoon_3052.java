@@ -28,9 +28,10 @@ public class Baekjoon_3052 {
 					check = false;
 				}
 				
-				if(check == false)
-					count++;
+
 			}
+			if(check == false)
+				count++;
 			
 		}
 		System.out.println("¼ıÀÚ   :: "+count);
