@@ -11,7 +11,7 @@ public class Baekjoon_2566 {
 		for(int i = 0 ; i < 9 ; i++) {
 			for(int j = 0 ; j < 9 ; j++) {
 				int result = sc.nextInt();
-				if(result > 0 && result <= 100 ) {
+				if(result >= 0 && result <= 100 ) {
 					array[i][j] = result;
 				} else {
 					j--;
