@@ -25,18 +25,23 @@ public class Baekjoon_1253 {
 		 *데이터 비교
 		 ***********************************************************************/
 		int count = 0;
-		for(int i = 0 ; i < N-1 ;i++) {
+		for(int i = 0 ; i < N ;i++) {
 			int a = arrayN[i]; 
-			
-			for(int j = 0 ; j < N ; j++) {
-				a = a + arrayN[j];
-				
+			for(int j = i+1 ; j < N ; j++) {
+				int b = a + arrayN[j];
+				System.out.println(b);
+				for(int z = 0 ; z < N ; z++) {
+					if(b == arrayN[z]) {
+						count++;
+					}
+					
+				}
 			}
 				
 			
 		}
 
-		System.out.println(count);
+		System.out.println("count "+count);
 	}
 
 }
