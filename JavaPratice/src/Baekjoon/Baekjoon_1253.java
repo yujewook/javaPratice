@@ -2,6 +2,7 @@ package Baekjoon;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.HashSet;
 import java.util.StringTokenizer;
 
 public class Baekjoon_1253 {
@@ -24,7 +25,7 @@ public class Baekjoon_1253 {
 		/************************************************************************
 		 *데이터 비교
 		 ***********************************************************************/
-		int count = 0;
+		HashSet<Integer> out = new HashSet<Integer>();
 		for(int i = 0 ; i < N ;i++) {
 			int a = arrayN[i]; 
 			for(int j = i+1 ; j < N ; j++) {
@@ -32,16 +33,14 @@ public class Baekjoon_1253 {
 				System.out.println(b);
 				for(int z = 0 ; z < N ; z++) {
 					if(b == arrayN[z]) {
-						count++;
+						out.add(b);
 					}
 					
 				}
 			}
-				
-			
 		}
 
-		System.out.println("count "+count);
+		System.out.println("갯수 "+out.size());
 	}
 
 }
