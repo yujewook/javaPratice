@@ -1,6 +1,6 @@
 package java_harshly;
 
-public class gugudan {
+public class gugudan2 {
 
 	public static void main(String[] args) {
 		for(int i = 1 ; i<10 ; i++ ) {
