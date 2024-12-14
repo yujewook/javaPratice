@@ -38,6 +38,11 @@ public class MyString_pratice_01 {
 		return result; 
 	}
 	
+	public boolean equals(MyString_pratice_01 rhs) {
+		String tmp = new String(string);
+		return tmp.compareTo(rhs.getString(string)) == 0;
+	}
+	
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
 		String inputString = sc.nextLine();
