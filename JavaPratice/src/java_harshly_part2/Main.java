@@ -1,5 +1,5 @@
 /*
- * 클래스 나누기 전 원본 코딩?
+ * 클래스 나누기 전 원본 코딩
  */
 package java_harshly_part2;
 import java.util.Scanner;
