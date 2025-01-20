@@ -1,21 +1,13 @@
 package OOP;
 
 public class MyList {
-	protected UserData head = new UserData("Dummy", "Dummy");
-    MyList() { }
-    
-    public boolean addNewNode(String name, String phone) {
-        if(findNode(name) != null)
-            return false;
-
-        UserData newUser = new UserData(name, phone);
-        newUser.next = head.next;
-        head.next = newUser;
-
-        return true;
-    }
-    
-    public UserData findNode(String name) {
+	static UserData head = new UserData("Dummy", "Dummy");
+	
+	MyList(UserData head){
+		this.head = head;
+	}
+	
+    public static UserData findNode(String name) {
         UserData tmp = head.next;
         while(tmp != null) {
             if(tmp.name.compareTo(name) == 0)
@@ -27,7 +19,18 @@ public class MyList {
         return null;
     }
     
-    public boolean removeNode(String name) {
+    public static boolean addNewNode(String name, String phone) {
+        if(findNode(name) != null)
+            return false;
+
+        UserData newUser = new UserData(name, phone);
+        newUser.next = head.next;
+        head.next = newUser;
+
+        return true;
+    }
+    
+    public static boolean removeNode(String name) {
         UserData prev = head;
         UserData toDelete = null;
 
@@ -45,7 +48,7 @@ public class MyList {
         return false;
     }
     
-    public void printAll() {
+    public static void printAll() {
         UserData tmp = head.next;
         while(tmp != null) {
             System.out.println(tmp.name + "\t" + tmp.phone);
