@@ -23,7 +23,7 @@ public class UserInterface {
         System.out.print("Phone: ");
         String phone = s.nextLine();
 
-        list.addNewNode(name, phone);
+        list.addNewNode(new UserData(name, phone));
     }
 
     public void searchUser() {
@@ -31,7 +31,7 @@ public class UserInterface {
         System.out.print("Name: ");
         String name = s.nextLine();
 
-        UserData user = list.findNode(name);
+        UserData user = (UserData)list.findNode(name);
         if(user != null) {
             System.out.println("Name: " + user.name);
             System.out.println("Phone: " + user.phone);

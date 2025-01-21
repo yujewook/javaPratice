@@ -1,24 +1,24 @@
 package OOP;
 
-class MyList {
-    protected UserData head = new UserData("Dummy", "Dummy");
-    MyList() { }
+public class MyList {
+    protected MyNode head;
+    public MyList(MyNode dummyHead) {
+        head = dummyHead;
+    }
 
-    public boolean addNewNode(String name, String phone) {
-        if(findNode(name) != null)
+    public boolean addNewNode(MyNode newNode) {
+        if(findNode(newNode.getKey()) != null)
             return false;
 
-        UserData newUser = new UserData(name, phone);
-        newUser.next = head.next;
-        head.next = newUser;
-
+        newNode.next = head.next;
+        head.next = newNode;
         return true;
     }
 
-    public UserData findNode(String name) {
-        UserData tmp = head.next;
+    public MyNode findNode(String key) {
+        MyNode tmp = head.next;
         while(tmp != null) {
-            if(tmp.name.compareTo(name) == 0)
+            if(tmp.getKey().compareTo(key) == 0)
                 return tmp;
 
             tmp = tmp.next;
@@ -28,28 +28,26 @@ class MyList {
     }
 
     public void printAll() {
-        UserData tmp = head.next;
+        MyNode tmp = head.next;
         while(tmp != null) {
-            System.out.println(tmp.name + "\t" + tmp.phone);
             tmp = tmp.next;
         }
     }
 
     public boolean removeNode(String name) {
-        UserData prev = head;
-        UserData toDelete = null;
+        MyNode prev = head;
+        MyNode toDelete = null;
 
         while(prev.next != null) {
             toDelete = prev.next;
-
-            if(toDelete.name.compareTo(name) == 0) {
+            if(toDelete.getKey().compareTo(name) == 0) {
                 prev.next = toDelete.next;
                 return true;
             }
-
             prev = prev.next;
         }
 
         return false;
     }
 }
+
