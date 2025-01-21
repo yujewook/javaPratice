@@ -1,9 +1,9 @@
 package OOP;
 
 public class MyList {
-	static UserData head = new UserData("Dummy", "Dummy");
+	static MyNode head;
 	
-	MyList(UserData head){
+	MyList(MyNode head){
 		this.head = head;
 	}
 	
