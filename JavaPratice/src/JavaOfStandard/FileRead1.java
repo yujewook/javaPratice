@@ -1,4 +1,4 @@
-package test;
+package JavaOfStandard;
 
 import java.io.*;
 import java.util.Scanner;
