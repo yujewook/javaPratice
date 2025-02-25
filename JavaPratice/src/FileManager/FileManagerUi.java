@@ -1,5 +1,6 @@
 package FileManager;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class FileManagerUi {
@@ -11,7 +12,7 @@ public class FileManagerUi {
         String inputFilePath ;
         String outputDirPath;
         String directory;
-        
+        ArrayList<FileDataDTO> outdata;
         while (true) {
         	//1.디렉토리 조회
         	System.out.print("검색할 디렉토리 경로 입력 (예: D:/output/): ");
@@ -21,13 +22,12 @@ public class FileManagerUi {
         	System.out.print("원본 엑셀 파일 경로 입력 (예: D:/test.xlsx): ");
         	inputFilePath = scanner.nextLine();
 
-        	
         	System.out.println("\n========= 메뉴 선택 =========");
             System.out.println("1. 엑셀 파일 읽기");
             System.out.println("2. 엑셀 파일 복사");
-            System.out.println("3. 엑셀 파일 sorting 후 해당 파일에 저장");
+            System.out.println("3. 엑셀 파일 sort된 데잍터 조회");
             System.out.println("4. 엑셀 파일 sorting 후 복사 파일에 저장");
-            System.out.println("5. 고객Data 이자Data 적용"); 
+            System.out.println("5. 고객데이터와 이자데이터 활용데이터"); 
             System.out.println("6. 종료");
             System.out.print("선택 (1~6): ");
 
@@ -39,19 +39,22 @@ public class FileManagerUi {
                 	fmu.readExcelFile(inputFilePath); 
                     break;
                 case 2:
-                	//3.복사시 경로 입력         	
+                	//복사시 경로 입력         	
                 	System.out.print("복사할 디렉토리 경로 입력 (예: D:/output/): ");
                 	outputDirPath = scanner.nextLine();
                 	fmu.createDirectory(outputDirPath); //경로에 디렉토리 존재 조회
                 	fmu.copyFile(inputFilePath, outputDirPath);
                     break;
                 case 3:
-                	System.out.print("복사할 디렉토리 경로 입력 (예: D:/output/): ");
-                	outputDirPath = scanner.nextLine();
-                	fmu.createDirectory(outputDirPath); //경로에 디렉토리 존재 조회
+                	fmu.sortFile(inputFilePath);
                     break;
+                case 4:       	
+                	System.out.print("복사할 파일명과 경로 입력 (예: D:/output/test.xlsx): ");
+                	outputDirPath = scanner.nextLine();
+                	outdata = fmu.sortFile(inputFilePath);
+                	fmu.copySortExcelFile(outdata, outputDirPath);
+                	break;
                 case 5:
-                    
                     break;
                 case 6:
                     System.out.println("프로그램 종료.");

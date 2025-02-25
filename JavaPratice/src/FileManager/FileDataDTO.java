@@ -1,12 +1,9 @@
 package FileManager;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
 public class FileDataDTO {
 	private String name;
-	private Date incomeDate;
-	private BigDecimal income;
+	private String incomeDate;
+	private String income;
 	
 	public String getName() {
 		return name;
@@ -14,17 +11,22 @@ public class FileDataDTO {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public Date getIncomeDate() {
+	public String getIncomeDate() {
 		return incomeDate;
 	}
-	public void setIncomeDate(Date incomeDate) {
+	public void setIncomeDate(String incomeDate) {
 		this.incomeDate = incomeDate;
 	}
-	public BigDecimal getIncome() {
+
+	public String getIncome() {
 		return income;
 	}
-	public void setIncome(BigDecimal income) {
+	public void setIncome(String income) {
 		this.income = income;
 	}
-
+	
+	@Override
+	public String toString() {
+		return "FileDataDTO [name=" + name + ", incomeDate=" + incomeDate + ", income=" + income + "]";
+	}
 }
