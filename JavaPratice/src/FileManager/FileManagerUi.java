@@ -1,6 +1,8 @@
 package FileManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class FileManagerUi {
@@ -52,9 +54,13 @@ public class FileManagerUi {
                 case 3:
                     System.out.print("복사할 파일명과 경로 입력 (예: D:/output/sorted.xlsx 또는 D:/output/sorted.txt): ");
                     outputDirPath = scanner.nextLine();
-                    
                     if (inputFilePath.endsWith(".xlsx")) {
-                        excelData = fmu.sortFile(inputFilePath);
+                        // sortFields: 정렬할 필드명 ("name", "incomeDate", "income")
+                        // isAscending: 오름차순/내림차순 설정 (true: 오름차순, false: 내림차순)
+                        List<String> sortFields = Arrays.asList("name", "incomeDate");
+                        List<Boolean> isAscending = Arrays.asList(true, true); // 이름과 날짜는 오름차순 정렬
+                        
+                        excelData = (ArrayList<FileDataDTO>) fmu.sortExelFile(inputFilePath , FileDataDTO.class , sortFields, isAscending ); //파일자체 조회
                         fmu.copySortExcelFile(excelData, outputDirPath , inputFilePath);
                     } else if (inputFilePath.endsWith(".txt")) {
                         txtData = fmu.sortTxtFile(inputFilePath);

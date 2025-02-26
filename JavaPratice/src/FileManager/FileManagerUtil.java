@@ -161,73 +161,92 @@ public class FileManagerUtil {
         }
     }
     
-    //엑셀 파일 sorting 하기
-    public ArrayList<FileDataDTO> sortFile(String inputFilePath) {
-    	ArrayList<FileDataDTO> outdata = new ArrayList<FileDataDTO>(); 
-        FileDataDTO sortdata;
-        
+    // T: 데이터 타입, sortFields: 정렬할 필드들, isAscending: 각 필드의 정렬 방향
+    public <T> List<T> sortExelFile(String inputFilePath, Class<T> clazz, List<String> sortFields, List<Boolean> isAscending) {
+        List<T> outdata = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(inputFilePath);
-                Workbook workbook = new XSSFWorkbook(fis)) {
-                
-                // 첫 번째 시트를 가져옴
-                Sheet sheet = workbook.getSheetAt(0);
-                if (sheet == null) {
-                    throw new Exception("첫 번째 시트가 존재하지 않습니다.");
-                }
+             Workbook workbook = new XSSFWorkbook(fis)) {
 
-                // 시트의 데이터를 출력
-                int rowCount = sheet.getPhysicalNumberOfRows(); // 전체 행 개수 가져오기
+            // 첫 번째 시트를 가져옴
+            Sheet sheet = workbook.getSheetAt(0);
+            if (sheet == null) {
+                throw new Exception("첫 번째 시트가 존재하지 않습니다.");
+            }
 
-                for (int i = 1; i < rowCount; i++) {
-                    Row row = sheet.getRow(i);
-                    if (row == null) continue; // 빈 행 무시
-                    
-                    sortdata = new FileDataDTO(); // DTO 객체 생성
-                    
-                    int cellCount = row.getPhysicalNumberOfCells(); // 현재 행의 셀 개수 가져오기
+            // 시트의 데이터를 출력
+            int rowCount = sheet.getPhysicalNumberOfRows(); // 전체 행 개수 가져오기
 
-                    for (int j = 0; j < cellCount; j++) {
-                        Cell cell = row.getCell(j);
-                        if(j==0)
-                        sortdata.setName(cell.toString());	
-                        if(j==1)
-                        sortdata.setIncomeDate(getCellValueAsString(cell));	
-                        if(j==2)
-                        sortdata.setIncome(getCellValueAsString(cell));
+            for (int i = 1; i < rowCount; i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue; // 빈 행 무시
+
+                T sortdata = clazz.getDeclaredConstructor().newInstance(); // 동적으로 객체 생성
+                int cellCount = row.getPhysicalNumberOfCells(); // 현재 행의 셀 개수 가져오기
+
+                for (int j = 0; j < cellCount; j++) {
+                    Cell cell = row.getCell(j);
+                    // 필드 이름에 맞춰 셀 값을 셋팅하는 로직 작성
+                    if (clazz.equals(FileDataDTO.class)) {
+                        FileDataDTO data = (FileDataDTO) sortdata;
+                        if (j == 0) data.setName(cell.toString());
+                        if (j == 1) data.setIncomeDate(getCellValueAsString(cell));
+                        if (j == 2) data.setIncome(getCellValueAsString(cell));
                     }
-                    outdata.add(sortdata); // 리스트에 추가
                 }
-           } catch (FileNotFoundException e) {
-        	   System.out.println("파일을 찾을 수 없습니다: " + inputFilePath);
-               e.printStackTrace();
-           } catch (IOException e) {
-               System.out.println("엑셀 파일을 읽는 중 오류가 발생했습니다.");
-               e.printStackTrace();
-           } catch (Exception e) {
-        	   e.printStackTrace();
-		}
-        
+                outdata.add(sortdata); // 리스트에 추가
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("파일을 찾을 수 없습니다: " + inputFilePath);
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("엑셀 파일을 읽는 중 오류가 발생했습니다.");
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // 정렬 수행
-        Collections.sort(outdata , new Comparator<FileDataDTO>() {
+        Collections.sort(outdata, new Comparator<T>() {
             @Override
-            public int compare(FileDataDTO o1, FileDataDTO o2) {
-                // 1. name(이름) 오름차순
-                int nameCompare = o1.getName().compareTo(o2.getName());
-                if (nameCompare != 0) return nameCompare;
+            public int compare(T o1, T o2) {
+                // FileDataDTO 타입일 경우 처리
+                if (o1 instanceof FileDataDTO && o2 instanceof FileDataDTO) {
+                    FileDataDTO data1 = (FileDataDTO) o1;
+                    FileDataDTO data2 = (FileDataDTO) o2;
 
-                // 2. incomeDate(입금 날짜) 오름차순
-                int dateCompare = o1.getIncomeDate().compareTo(o2.getIncomeDate());
-                if (dateCompare != 0) return dateCompare;
+                    // 필드 순서대로 정렬 (sortFields는 필드 이름, isAscending은 오름/내림차순)
+                    for (int i = 0; i < sortFields.size(); i++) {
+                        String field = sortFields.get(i);
+                        boolean ascending = isAscending.get(i);
 
-                // 3. income(금액) 내림차순
-                return o2.getIncome().compareTo(o1.getIncome());
+                        int comparisonResult = 0;
+                        if ("name".equalsIgnoreCase(field)) {
+                            comparisonResult = data1.getName().compareTo(data2.getName());
+                        } else if ("incomeDate".equalsIgnoreCase(field)) {
+                            comparisonResult = data1.getIncomeDate().compareTo(data2.getIncomeDate());
+                        } else if ("income".equalsIgnoreCase(field)) {
+                            comparisonResult = Double.compare(Double.parseDouble(data1.getIncome()), Double.parseDouble(data2.getIncome()));
+                        }
+
+                        // 오름차순/내림차순 처리
+                        if (!ascending) {
+                            comparisonResult = -comparisonResult; // 내림차순인 경우 반전
+                        }
+
+                        if (comparisonResult != 0) {
+                            return comparisonResult;
+                        }
+                    }
+                }
+                return 0;
             }
         });
-        
-        for (FileDataDTO data : outdata) {
-        	System.out.println("복사이후"+data.toString());
+
+        for (T data : outdata) {
+            System.out.println("정렬된 데이터: " + data);
         }
-    	return outdata;
+
+        return outdata;
     }
     
     //2.0220101E7 변환 방지 메소드

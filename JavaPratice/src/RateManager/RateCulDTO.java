@@ -52,10 +52,9 @@ public class RateCulDTO {
 	public void setRate(String rate) {
 		this.rate = rate;
 	}
-	//È®ÀÎ¿ë
 	@Override
 	public String toString() {
-		return "rateCulDTO [name=" + name + ", incomeDate=" + incomeDate + ", rateDate=" + rateDate + ", income="
-				+ income + ", date=" + date + ", rate=" + rate + "]";
+		return "RateCulDTO [name=" + name + ", incomeDate=" + incomeDate + ", rateDate=" + rateDate + ", income="
+				+ income + ", date=" + date + ", rate=" + rate + ", sumRateIncome=" + sumRateIncome + "]";
 	}
 }
