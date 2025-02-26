@@ -1,25 +1,23 @@
 package FileManager;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
 public class FileDataRateInfoDTO {
-	private BigDecimal income;
-	private BigDecimal rate;
+	private String rateDate;
+	private String rate;
 	
-	public BigDecimal getIncome() {
-		return income;
+	public String getRateDate() {
+		return rateDate;
 	}
-	public void setIncome(BigDecimal income) {
-		this.income = income;
+	public void setRateDate(String income) {
+		this.rateDate = income;
 	}
-	public BigDecimal getRate() {
+	public String getRate() {
 		return rate;
 	}
-	public void setRate(BigDecimal rate) {
+	public void setRate(String rate) {
 		this.rate = rate;
 	}
-	
-
-
+	@Override
+	public String toString() {
+		return "FileDataRateInfoDTO [rateDate=" + rateDate + ", rate=" + rate + "]";
+	}
 }

@@ -25,6 +25,7 @@ public class FileDataDTO {
 		this.income = income;
 	}
 	
+	//확인용 메소드
 	@Override
 	public String toString() {
 		return "FileDataDTO [name=" + name + ", incomeDate=" + incomeDate + ", income=" + income + "]";

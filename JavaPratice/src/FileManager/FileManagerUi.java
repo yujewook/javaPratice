@@ -4,66 +4,81 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class FileManagerUi {
-    // 프로그램 실행 (메뉴 선택)
     public void run() throws Exception {
-    	Scanner scanner = new Scanner(System.in);
-        System.out.println("엑셀 파일 관리 프로그램 시작");
-        FileManagerUtil fmu = new FileManagerUtil(); 
-        String inputFilePath ;
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("엑셀 및 TXT 파일 관리 프로그램 시작");
+        FileManagerUtil fmu = new FileManagerUtil();
+        String inputFilePath;
         String outputDirPath;
         String directory;
-        ArrayList<FileDataDTO> outdata;
-        while (true) {
-        	//1.디렉토리 조회
-        	System.out.print("검색할 디렉토리 경로 입력 (예: D:/output/): ");
-        	directory = scanner.nextLine();
-        	fmu.searchDirectory(directory);
-        	//2.원본파일명 경로 입력        	
-        	System.out.print("원본 엑셀 파일 경로 입력 (예: D:/test.xlsx): ");
-        	inputFilePath = scanner.nextLine();
+        ArrayList<String> txtData;
+        ArrayList<FileDataDTO> excelData;
 
-        	System.out.println("\n========= 메뉴 선택 =========");
-            System.out.println("1. 엑셀 파일 읽기");
-            System.out.println("2. 엑셀 파일 복사");
-            System.out.println("3. 엑셀 파일 sort된 데잍터 조회");
-            System.out.println("4. 엑셀 파일 sorting 후 복사 파일에 저장");
-            System.out.println("5. 고객데이터와 이자데이터 활용데이터"); 
-            System.out.println("6. 종료");
-            System.out.print("선택 (1~6): ");
+        while (true) {
+            System.out.print("검색할 디렉토리 경로 입력 (예: D:/output/): ");
+            directory = scanner.nextLine();
+            fmu.searchDirectory(directory);
+
+            System.out.print("원본 파일 경로 입력 (예: D:/test.xlsx 또는 D:/test.txt): ");
+            inputFilePath = scanner.nextLine();
+
+            System.out.println("\n========= 메뉴 선택 =========");
+            System.out.println("1. 엑셀/TXT 파일 읽기");
+            System.out.println("2. 파일 복사");
+            System.out.println("3. 파일 정렬 후 복사");
+            System.out.println("4. 이자계산파일");
+            System.out.println("5. 종료");
+            System.out.print("선택 (1~5): ");
 
             int choice = scanner.nextInt();
-            scanner.nextLine(); // 개행 문자 제거
+            scanner.nextLine();
 
             switch (choice) {
                 case 1:
-                	fmu.readExcelFile(inputFilePath); 
+                    if (inputFilePath.endsWith(".xlsx")) {
+                        fmu.readExcelFile(inputFilePath);
+                    } else if (inputFilePath.endsWith(".txt")) {
+                        fmu.readTxtFile(inputFilePath);
+                    } else {
+                        System.out.println("지원되지 않는 파일 형식입니다.");
+                    }
                     break;
                 case 2:
-                	//복사시 경로 입력         	
-                	System.out.print("복사할 디렉토리 경로 입력 (예: D:/output/): ");
-                	outputDirPath = scanner.nextLine();
-                	fmu.createDirectory(outputDirPath); //경로에 디렉토리 존재 조회
-                	fmu.copyFile(inputFilePath, outputDirPath);
+                    System.out.print("복사할 디렉토리 경로 입력 (예: D:/output/): ");
+                    outputDirPath = scanner.nextLine();
+                    fmu.createDirectory(outputDirPath);
+                    fmu.copyFile(inputFilePath, outputDirPath);
                     break;
                 case 3:
-                	fmu.sortFile(inputFilePath);
+                    System.out.print("복사할 파일명과 경로 입력 (예: D:/output/sorted.xlsx 또는 D:/output/sorted.txt): ");
+                    outputDirPath = scanner.nextLine();
+                    
+                    if (inputFilePath.endsWith(".xlsx")) {
+                        excelData = fmu.sortFile(inputFilePath);
+                        fmu.copySortExcelFile(excelData, outputDirPath , inputFilePath);
+                    } else if (inputFilePath.endsWith(".txt")) {
+                        txtData = fmu.sortTxtFile(inputFilePath);
+                        fmu.copySortTxtFile(txtData, outputDirPath);
+                    } else {
+                        System.out.println("지원되지 않는 파일 형식입니다.");
+                    }
                     break;
-                case 4:       	
-                	System.out.print("복사할 파일명과 경로 입력 (예: D:/output/test.xlsx): ");
-                	outputDirPath = scanner.nextLine();
-                	outdata = fmu.sortFile(inputFilePath);
-                	fmu.copySortExcelFile(outdata, outputDirPath);
-                	break;
-                case 5:
-                    break;
-                case 6:
-                    System.out.println("프로그램 종료.");
+                case 4:
+                	System.out.println("입금데이터엑셀 파일명과 경로 입력 (예: D:/test.xlsx)");
+                	String incomefileName = scanner.nextLine();
+                	System.out.println("이자데이터엑셀 파일명과 경로 입력 (예: D:/test1.xlsx)");
+                	String ratefileName = scanner.nextLine();
+                	fmu.rateCalFile(incomefileName , ratefileName);
                     return;
+                case 5:
+                	System.out.println("프로그램 종료.");
+                	return;
                 default:
                     System.out.println("잘못된 입력입니다.");
                     break;
             }
         }
     }
-
+    
+    
 }
