@@ -74,8 +74,10 @@ public class FileManagerUi {
                 	String incomefileName = scanner.nextLine();
                 	System.out.println("이자데이터엑셀 파일명과 경로 입력 (예: D:/test1.xlsx)");
                 	String ratefileName = scanner.nextLine();
-                	fmu.rateCalFile(incomefileName , ratefileName);
-                    return;
+                	System.out.println("결과물 파일 타입을 결정해 주세요 (예: TXT | EXCEL) ");
+                	String fileType = scanner.nextLine();
+                	fmu.rateCalFile(incomefileName , ratefileName ,fileType);
+                	break;
                 case 5:
                 	System.out.println("프로그램 종료.");
                 	return;

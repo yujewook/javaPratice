@@ -9,18 +9,30 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -61,7 +73,7 @@ public class FileManagerUtil {
     }
 
     public void readTxtFile(String filePath) {
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8))) {
             String line;
             System.out.println("TXT 파일 내용:");
             while ((line = br.readLine()) != null) {
@@ -338,8 +350,9 @@ public class FileManagerUtil {
      * 2. 이자데이터 데이터 리스트로 뽑아 오기 후 정렬 일자별
      * 3. 이자계산메소드 호출
      * 4. txt파일로 만들기
+     * 5. 파일만들기 메소드 호출
      */
-    public void rateCalFile (String incomefileName, String ratefileName) {
+    public void rateCalFile (String incomefileName, String ratefileName, String fileType) {
     	
         RateManagerUtil rmu = new RateManagerUtil();
         List<FileDataDTO> incomeInfo = new ArrayList<>();
@@ -412,6 +425,14 @@ public class FileManagerUtil {
         for (RateCulDTO rateCul : rateCulList) {
             System.out.println(rateCul);
         }
+        //파일 만들기
+        try {
+			saveToFile(rateCulList,fileType);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
     }
 
 
@@ -432,4 +453,170 @@ public class FileManagerUtil {
                 return 0.0;
         }
     }
+    
+    //금액파일 만들기
+    public void saveToFile(List<RateCulDTO> data, String fileType) throws IOException {
+        // 오늘 날짜 구하기 (yyyyMMdd 형식)
+        String today = new SimpleDateFormat("yyyyMMdd").format(new Date());
+        //이름 지우기
+        Set<String> seenNames = new HashSet<>();
+        List<RateCulDTO> result = new ArrayList<>();
+
+        for (RateCulDTO dto : data) {
+            if (seenNames.contains(dto.getName())) {
+                // 중복된 이름은 ""로 변경
+                RateCulDTO newDto = new RateCulDTO();
+                newDto.setName(""); // 이름을 빈 문자열로 변경
+                newDto.setIncomeDate(dto.getIncomeDate());
+                newDto.setRateDate(dto.getRateDate());
+                newDto.setIncome(dto.getIncome());
+                newDto.setDate(dto.getDate());
+                newDto.setRate(dto.getRate());
+                newDto.setSumRateIncome(dto.getSumRateIncome());
+                result.add(newDto);
+            } else {
+                seenNames.add(dto.getName());
+                result.add(dto);
+            }
+        }
+        data = result;
+        //이름 지우기
+        
+        //파일 생성 시작
+        if ("TXT".equalsIgnoreCase(fileType)) {
+            saveAsTxt(data, today);
+        } else if ("EXCEL".equalsIgnoreCase(fileType)) {
+            saveAsExcel(data, today);
+        } else {
+            throw new IllegalArgumentException("지원하지 않는 파일 타입입니다. TXT 또는 EXCEL을 입력하세요.");
+        }
+    }
+
+    public void saveAsTxt(List<RateCulDTO> data, String today) throws IOException {
+        // 컬럼 너비 설정 (각 필드의 최대 길이를 고려한 너비)
+        int nameWidth = 15;        // 이름 (한글 5자 정도)
+        int incomeWidth = 14;      // 금액 (천단위 구분 포함) -> incomeWidth를 늘림
+        int fromDateWidth = 12;    // 시작일 (YYYY-MM-DD)
+        int toDateWidth = 12;      // 종료일 (YYYY-MM-DD)
+        int daysWidth = 8;         // 일수 (오른쪽 정렬) -> 두 칸 앞으로 당김
+        int rateWidth = 10;        // 금리 (오른쪽 정렬) -> 두 칸 앞으로 당김
+        int sumRateIncomeWidth = 14; // 금액+이자 -> 두 칸 앞으로 당김
+
+        // 파일 경로 설정
+        String fileName = "D:/RateCul_" + today + ".txt";
+        DecimalFormat df = new DecimalFormat("#,###");
+
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), StandardCharsets.UTF_8))) {
+
+            // 기준일자 작성
+            writer.write("기준일자: " + today);
+            writer.newLine();
+            
+            // 헤더 작성 (오른쪽 정렬된 필드 고려)
+            String headerFormat = "%-" + nameWidth + "s" +    // 이름 (왼쪽)
+                                  "%" + incomeWidth + "s" +     // 금액 (오른쪽)
+                                  "%" + fromDateWidth + "s" +   // From Date (오른쪽)
+                                  "%" + toDateWidth + "s" +     // To Date (오른쪽)
+                                  "%" + daysWidth + "s" +       // 일수 (오른쪽)
+                                  "%" + rateWidth + "s" +       // 금리 (오른쪽)
+                                  "%" + sumRateIncomeWidth + "s"; // 금액+이자 (오른쪽)
+            writer.write(String.format(headerFormat,
+                    "이름", "금액", "From Date", "To Date", "일수", "금리", "금액+이자"));
+            writer.newLine();
+
+            // 데이터 작성
+            for (RateCulDTO dto : data) {
+                // 이름 처리 (null일 경우 스페이스 2칸을 추가하여 incomeWidth 만큼 여유 추가)
+                String name = (dto.getName() == null || dto.getName().isEmpty()) ? "  " : dto.getName();
+                
+                // 금액 포맷
+                String income = df.format(Long.parseLong(dto.getIncome()));
+                String sumRateIncome = df.format(Long.parseLong(dto.getSumRateIncome()));
+                
+                // 날짜 포맷팅 (YYYYMMDD -> YYYY-MM-DD)
+                String fromDateRaw = dto.getIncomeDate();
+                String toDateRaw = dto.getRateDate();
+                String fromDate = fromDateRaw.length() == 8 ? 
+                    fromDateRaw.substring(0,4) + "-" + fromDateRaw.substring(4,6) + "-" + fromDateRaw.substring(6) : 
+                    fromDateRaw;
+                String toDate = toDateRaw.length() == 8 ? 
+                    toDateRaw.substring(0,4) + "-" + toDateRaw.substring(4,6) + "-" + toDateRaw.substring(6) : 
+                    toDateRaw;
+                
+                // 일수와 금리 (오른쪽 정렬)
+                String days = dto.getDate();
+                String rate = dto.getRate();
+
+                // 데이터 라인 포맷 (헤더와 정렬 일치)
+                String lineFormat = "%-" + nameWidth + "s" +    // 이름 (왼쪽)
+                                    "%" + incomeWidth + "s" +     // 금액 (오른쪽)
+                                    "%" + fromDateWidth + "s" +   // From Date (오른쪽)
+                                    "%" + toDateWidth + "s" +     // To Date (오른쪽)
+                                    "%" + daysWidth + "s" +       // 일수 (오른쪽)
+                                    "%" + rateWidth + "s" +       // 금리 (오른쪽)
+                                    "%" + sumRateIncomeWidth + "s"; // 금액+이자 (오른쪽)
+                
+                writer.write(String.format(lineFormat,
+                        name, income, fromDate, toDate, days, rate, sumRateIncome));
+                writer.newLine();
+            }
+
+            System.out.println("TXT 파일 저장 완료: " + fileName);
+
+        } catch (Exception e) {
+            System.err.println("파일 생성 중 오류 발생: " + e.getMessage());
+        }
+    }
+    
+    private void saveAsExcel(List<RateCulDTO> data, String today) throws IOException {
+    	String fileName = "D:/RateCul_" + today + ".xlsx";
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Rate Data");
+
+        // 스타일 설정
+        CellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setBorderBottom(BorderStyle.THIN);
+        headerStyle.setBorderTop(BorderStyle.THIN);
+        headerStyle.setBorderLeft(BorderStyle.THIN);
+        headerStyle.setBorderRight(BorderStyle.THIN);
+        
+        // 헤더 작성
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"이름", "금액", "From Date", "To Date", "일수", "금리", "금액+이자"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        // 데이터 작성
+        int rowNum = 1;
+        for (RateCulDTO dto : data) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(dto.getName());
+            row.createCell(1).setCellValue(dto.getIncome());
+            row.createCell(2).setCellValue(dto.getIncomeDate());
+            row.createCell(3).setCellValue(dto.getRateDate());
+            row.createCell(4).setCellValue(dto.getDate());
+            row.createCell(5).setCellValue(dto.getRate());
+            row.createCell(6).setCellValue(dto.getSumRateIncome());
+        }
+
+        // 자동 열 너비 조정
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // 파일 저장
+        try (FileOutputStream fileOut = new FileOutputStream(fileName)) {
+            workbook.write(fileOut);
+        }
+        workbook.close();
+        System.out.println("Excel 파일 저장 완료: " + fileName);
+    }
+    
+    
+    
 }

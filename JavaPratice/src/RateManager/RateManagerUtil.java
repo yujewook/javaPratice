@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -15,8 +17,11 @@ import FileManager.FileDataRateInfoDTO;
 
 public class RateManagerUtil {
     public List<RateCulDTO> calculateInterest(List<FileDataDTO> incomeInfo, List<FileDataRateInfoDTO> rateInfo) {
-        List<RateCulDTO> outRateList = new ArrayList<>();
+        
+    	List<RateCulDTO> outRateList = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        LocalDate today = LocalDate.now();
+        Date date = Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
         // 금리 데이터를 날짜순으로 정렬
         rateInfo.sort(Comparator.comparing(FileDataRateInfoDTO::getRateDate));
@@ -61,7 +66,7 @@ public class RateManagerUtil {
                 dto.setName(currentName);
                 dto.setIncomeDate(prevRateDate); // 기간 시작일
                 dto.setRateDate(nextRateDate);   // 기간 종료일
-                dto.setIncome(String.format("%.2f", currentAmount));
+                dto.setIncome(new BigDecimal(currentAmount).setScale(0, RoundingMode.HALF_UP).toString());
                 dto.setDate(String.valueOf(days));
                 dto.setRate(String.format("%.2f", applicableRate));
                 dto.setSumRateIncome(new BigDecimal(sumRateIncome).setScale(0, RoundingMode.HALF_UP).toString()); // 소수점 반올림
@@ -73,8 +78,8 @@ public class RateManagerUtil {
                 applicableRate = Double.parseDouble(rateData.getRate()); // 새 금리 적용
             }
 
-            // 마지막 금리 적용 (최종 금리 이후 무한정 적용되는 경우)
-            String finalEndDate = "99991231";
+            // 마지막 금리 적용 오늘 날짜
+            String finalEndDate = sdf.format(date);
             int finalDays = calculateDaysBetween(prevRateDate, finalEndDate);
             double finalSumRateIncome = currentAmount * (1 + (applicableRate / 100) * (finalDays / 365.0));
 
@@ -82,10 +87,10 @@ public class RateManagerUtil {
             finalDto.setName(currentName);
             finalDto.setIncomeDate(prevRateDate);
             finalDto.setRateDate(finalEndDate);
-            finalDto.setIncome(String.format("%.2f", currentAmount));
+            finalDto.setIncome(new BigDecimal(currentAmount).setScale(0, RoundingMode.HALF_UP).toString());
             finalDto.setDate(String.valueOf(finalDays));
             finalDto.setRate(String.format("%.2f", applicableRate));
-            finalDto.setSumRateIncome(String.format("%.2f", finalSumRateIncome));
+            finalDto.setSumRateIncome(new BigDecimal(finalSumRateIncome).setScale(0, RoundingMode.HALF_UP).toString());
             outRateList.add(finalDto);
         }
 
