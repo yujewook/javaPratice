@@ -9,6 +9,7 @@ public class FileManagerUi {
     public void run() throws Exception {
         Scanner scanner = new Scanner(System.in);
         System.out.println("엑셀 및 TXT 파일 관리 프로그램 시작");
+        
         FileManagerUtil fmu = new FileManagerUtil();
         String inputFilePath;
         String outputDirPath;
@@ -55,13 +56,12 @@ public class FileManagerUi {
                     System.out.print("복사할 파일명과 경로 입력 (예: D:/output/sorted.xlsx 또는 D:/output/sorted.txt): ");
                     outputDirPath = scanner.nextLine();
                     if (inputFilePath.endsWith(".xlsx")) {
-                        // sortFields: 정렬할 필드명 ("name", "incomeDate", "income")
+                        // sortFields: 정렬할 필드순서 ("name" : 0 , "incomeDate" : 1) => "0","1"
                         // isAscending: 오름차순/내림차순 설정 (true: 오름차순, false: 내림차순)
-                        List<String> sortFields = Arrays.asList("name", "incomeDate");
+                        List<String> sortFields = Arrays.asList("0", "1");
                         List<Boolean> isAscending = Arrays.asList(true, true); // 이름과 날짜는 오름차순 정렬
-                        
-                        excelData = (ArrayList<FileDataDTO>) fmu.sortExelFile(inputFilePath , FileDataDTO.class , sortFields, isAscending ); //파일자체 조회
-                        fmu.copySortExcelFile(excelData, outputDirPath , inputFilePath);
+                        List<String[]> excelData2 =  fmu.sortExelFile(inputFilePath , sortFields, isAscending ); //파일자체 조회
+                        fmu.copySortExcelFile(excelData2, outputDirPath );
                     } else if (inputFilePath.endsWith(".txt")) {
                         txtData = fmu.sortTxtFile(inputFilePath);
                         fmu.copySortTxtFile(txtData, outputDirPath);
@@ -70,6 +70,12 @@ public class FileManagerUi {
                     }
                     break;
                 case 4:
+                	
+                	/* 추가 변경 사항
+                	 * 1. 파일 소트 메소들 사용해서 List<String> 타입으로 받아오는것 실행 엑셀이던 파일이던 수행 입금데이터/이자데이터 받기 
+                	 * 2. 해당데이터 두개로 결과물 만들기
+                	 * 3. 파일만들기 호출 txt || execl 선택가능
+                	 */
                 	System.out.println("입금데이터엑셀 파일명과 경로 입력 (예: D:/test.xlsx)");
                 	String incomefileName = scanner.nextLine();
                 	System.out.println("이자데이터엑셀 파일명과 경로 입력 (예: D:/test1.xlsx)");
@@ -85,6 +91,7 @@ public class FileManagerUi {
                     System.out.println("잘못된 입력입니다.");
                     break;
             }
+            
         }
     }
     

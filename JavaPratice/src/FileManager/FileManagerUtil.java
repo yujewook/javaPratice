@@ -174,91 +174,82 @@ public class FileManagerUtil {
     }
     
     // T: 데이터 타입, sortFields: 정렬할 필드들, isAscending: 각 필드의 정렬 방향
-    public <T> List<T> sortExelFile(String inputFilePath, Class<T> clazz, List<String> sortFields, List<Boolean> isAscending) {
-        List<T> outdata = new ArrayList<>();
+    public List<String[]> sortExelFile(String inputFilePath, List<String> sortFields, List<Boolean> isAscending) {
+        List<String[]> outdata = new ArrayList<>();
+
         try (FileInputStream fis = new FileInputStream(inputFilePath);
              Workbook workbook = new XSSFWorkbook(fis)) {
 
-            // 첫 번째 시트를 가져옴
             Sheet sheet = workbook.getSheetAt(0);
             if (sheet == null) {
                 throw new Exception("첫 번째 시트가 존재하지 않습니다.");
             }
 
-            // 시트의 데이터를 출력
-            int rowCount = sheet.getPhysicalNumberOfRows(); // 전체 행 개수 가져오기
+            // 헤더 행 유지
+            Row headerRow = sheet.getRow(0);
+            if (headerRow != null) {
+                String[] header = new String[headerRow.getLastCellNum()];
+                for (int i = 0; i < headerRow.getLastCellNum(); i++) {
+                    Cell cell = headerRow.getCell(i);
+                    header[i] = cell != null ? cell.toString() : "";
+                }
+                outdata.add(header); // 첫 번째 행을 헤더로 추가
+            }
 
+            // 데이터 행 읽기
+            int rowCount = sheet.getPhysicalNumberOfRows();
             for (int i = 1; i < rowCount; i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) continue; // 빈 행 무시
+                if (row == null) continue;
 
-                T sortdata = clazz.getDeclaredConstructor().newInstance(); // 동적으로 객체 생성
-                int cellCount = row.getPhysicalNumberOfCells(); // 현재 행의 셀 개수 가져오기
-
-                for (int j = 0; j < cellCount; j++) {
+                String[] rowData = new String[row.getLastCellNum()];
+                for (int j = 0; j < row.getLastCellNum(); j++) {
                     Cell cell = row.getCell(j);
-                    // 필드 이름에 맞춰 셀 값을 셋팅하는 로직 작성
-                    if (clazz.equals(FileDataDTO.class)) {
-                        FileDataDTO data = (FileDataDTO) sortdata;
-                        if (j == 0) data.setName(cell.toString());
-                        if (j == 1) data.setIncomeDate(getCellValueAsString(cell));
-                        if (j == 2) data.setIncome(getCellValueAsString(cell));
-                    }
+                    rowData[j] = (cell != null) ? getCellValueAsString(cell) : "";
                 }
-                outdata.add(sortdata); // 리스트에 추가
+                outdata.add(rowData);
             }
-        } catch (FileNotFoundException e) {
-            System.out.println("파일을 찾을 수 없습니다: " + inputFilePath);
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.out.println("엑셀 파일을 읽는 중 오류가 발생했습니다.");
-            e.printStackTrace();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // 정렬 수행
-        Collections.sort(outdata, new Comparator<T>() {
-            @Override
-            public int compare(T o1, T o2) {
-                // FileDataDTO 타입일 경우 처리
-                if (o1 instanceof FileDataDTO && o2 instanceof FileDataDTO) {
-                    FileDataDTO data1 = (FileDataDTO) o1;
-                    FileDataDTO data2 = (FileDataDTO) o2;
+        // 정렬 수행 (첫 번째 행(헤더)은 제외하고 정렬)
+        if (outdata.size() > 1) {
+            Collections.sort(outdata.subList(1, outdata.size()), (o1, o2) -> {
+                for (int i = 0; i < sortFields.size(); i++) {
+                    int columnIndex = Integer.parseInt(sortFields.get(i)); // 정렬할 컬럼 인덱스
+                    boolean ascending = isAscending.get(i);
 
-                    // 필드 순서대로 정렬 (sortFields는 필드 이름, isAscending은 오름/내림차순)
-                    for (int i = 0; i < sortFields.size(); i++) {
-                        String field = sortFields.get(i);
-                        boolean ascending = isAscending.get(i);
+                    String val1 = o1[columnIndex];
+                    String val2 = o2[columnIndex];
 
-                        int comparisonResult = 0;
-                        if ("name".equalsIgnoreCase(field)) {
-                            comparisonResult = data1.getName().compareTo(data2.getName());
-                        } else if ("incomeDate".equalsIgnoreCase(field)) {
-                            comparisonResult = data1.getIncomeDate().compareTo(data2.getIncomeDate());
-                        } else if ("income".equalsIgnoreCase(field)) {
-                            comparisonResult = Double.compare(Double.parseDouble(data1.getIncome()), Double.parseDouble(data2.getIncome()));
-                        }
+                    int comparisonResult = compareValues(val1, val2);
 
-                        // 오름차순/내림차순 처리
-                        if (!ascending) {
-                            comparisonResult = -comparisonResult; // 내림차순인 경우 반전
-                        }
+                    if (!ascending) {
+                        comparisonResult = -comparisonResult;
+                    }
 
-                        if (comparisonResult != 0) {
-                            return comparisonResult;
-                        }
+                    if (comparisonResult != 0) {
+                        return comparisonResult; // 다른 값이 나오면 정렬 결과 반환
                     }
                 }
-                return 0;
-            }
-        });
-
-        for (T data : outdata) {
-            System.out.println("정렬된 데이터: " + data);
+                return 0; // 모든 조건에서 값이 같으면 유지
+            });
         }
 
         return outdata;
+    }
+
+    // 문자열 비교 (숫자는 숫자로 비교)
+    private int compareValues(String val1, String val2) {
+        try {
+            double num1 = Double.parseDouble(val1);
+            double num2 = Double.parseDouble(val2);
+            return Double.compare(num1, num2);
+        } catch (NumberFormatException e) {
+            return val1.compareTo(val2); // 숫자가 아니면 문자열 비교
+        }
     }
     
     //2.0220101E7 변환 방지 메소드
@@ -283,68 +274,28 @@ public class FileManagerUtil {
     }
     
     // 엑셀 파일 생성 메소드
-    public void copySortExcelFile(ArrayList<FileDataDTO> outdata, String fileName, String exfileName) {
-        // 엑셀 파일 생성
-        Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("Sheet1");
-        Sheet exSheet;
-        
-        // 첫 번째 행: 헤더 작성위한 것 
-        Row headerRow;
-        try (FileInputStream exfis = new FileInputStream(exfileName);
-                Workbook exworkbook = new XSSFWorkbook(exfis)) {
-               
-               exSheet = exworkbook.getSheetAt(0);
-               if (exSheet == null) {
-                   System.out.println("첫 번째 시트가 존재하지 않습니다.");
-                   return;
-               }
-               
-               // 기존 파일의 헤더 복사
-               Row exHeaderRow = exSheet.getRow(0);
-               headerRow = sheet.createRow(0);
-               
-               if (exHeaderRow != null) {
-                   for (int i = 0; i < exHeaderRow.getLastCellNum(); i++) {
-                       Cell exCell = exHeaderRow.getCell(i);
-                       if (exCell != null) {
-                           headerRow.createCell(i).setCellValue(exCell.getStringCellValue());
-                       }
-                   }
-               }
-           } catch (FileNotFoundException e) {
-               System.out.println("파일을 찾을 수 없습니다: " + exfileName);
-               e.printStackTrace();
-           } catch (IOException e) {
-               System.out.println("엑셀 파일을 읽는 중 오류가 발생했습니다.");
-               e.printStackTrace();
-           }
+    public void copySortExcelFile(List<String[]> outdata, String fileName) {
+        try (Workbook workbook = new XSSFWorkbook();
+             FileOutputStream fileOut = new FileOutputStream(fileName)) {
 
+            Sheet sheet = workbook.createSheet("Sheet1");
 
-        // 데이터 작성
-        int rowNum = 1;  // 첫 번째 데이터 행 (헤더 바로 아래)
-        for (FileDataDTO data : outdata) {
-            Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(data.getName());
-            row.createCell(1).setCellValue(data.getIncomeDate());
-            row.createCell(2).setCellValue(data.getIncome()); 
-        }
+            int rowNum = 0;
+            for (String[] rowData : outdata) {
+                Row row = sheet.createRow(rowNum++);
+                for (int i = 0; i < rowData.length; i++) {
+                    row.createCell(i).setCellValue(rowData[i]);
+                }
+            }
 
-        // 파일 저장
-        try (FileOutputStream fileOut = new FileOutputStream(fileName)) {
             workbook.write(fileOut);
+            System.out.println("엑셀 파일이 생성되었습니다.");
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                workbook.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
-
-        System.out.println("엑셀 파일이 생성되었습니다.");
     }
+
+
     
     /* 1. 입금데이터 데이터 리스트로 뽑아 오기 후 정렬 이름별/날자별 
      * 2. 이자데이터 데이터 리스트로 뽑아 오기 후 정렬 일자별
