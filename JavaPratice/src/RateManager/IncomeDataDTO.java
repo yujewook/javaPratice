@@ -1,6 +1,6 @@
-package FileManager;
+package RateManager;
 
-public class FileDataDTO {
+public class IncomeDataDTO {
 	private String name;
 	private String incomeDate;
 	private String income;

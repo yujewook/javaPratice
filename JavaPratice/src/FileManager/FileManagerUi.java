@@ -4,6 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.Function;
+
+import ArrayConvert.Converter;
+import RateManager.IncomeDataDTO;
+import RateManager.RateCulDTO;
+import RateManager.RateInfoDTO;
+import RateManager.RateManagerUtil;
 
 public class FileManagerUi {
     public void run() throws Exception {
@@ -11,19 +18,21 @@ public class FileManagerUi {
         System.out.println("엑셀 및 TXT 파일 관리 프로그램 시작");
         
         FileManagerUtil fmu = new FileManagerUtil();
+        
         String inputFilePath;
         String outputDirPath;
         String directory;
         ArrayList<String> txtData;
-        ArrayList<FileDataDTO> excelData;
-
+        List<String> sortFields;
+        List<Boolean> isAscending;
+        List<String[]> excelData;
+        
         while (true) {
             System.out.print("검색할 디렉토리 경로 입력 (예: D:/output/): ");
             directory = scanner.nextLine();
             fmu.searchDirectory(directory);
 
-            System.out.print("원본 파일 경로 입력 (예: D:/test.xlsx 또는 D:/test.txt): ");
-            inputFilePath = scanner.nextLine();
+
 
             System.out.println("\n========= 메뉴 선택 =========");
             System.out.println("1. 엑셀/TXT 파일 읽기");
@@ -38,6 +47,8 @@ public class FileManagerUi {
 
             switch (choice) {
                 case 1:
+                    System.out.print("원본 파일 경로 입력 (예: D:/test.xlsx 또는 D:/test.txt): ");
+                    inputFilePath = scanner.nextLine();
                     if (inputFilePath.endsWith(".xlsx")) {
                         fmu.readExcelFile(inputFilePath);
                     } else if (inputFilePath.endsWith(".txt")) {
@@ -46,22 +57,28 @@ public class FileManagerUi {
                         System.out.println("지원되지 않는 파일 형식입니다.");
                     }
                     break;
+                
                 case 2:
+                    System.out.print("원본 파일 경로 입력 (예: D:/test.xlsx 또는 D:/test.txt): ");
+                    inputFilePath = scanner.nextLine();
                     System.out.print("복사할 디렉토리 경로 입력 (예: D:/output/): ");
                     outputDirPath = scanner.nextLine();
                     fmu.createDirectory(outputDirPath);
                     fmu.copyFile(inputFilePath, outputDirPath);
                     break;
+                
                 case 3:
+                    System.out.print("원본 파일 경로 입력 (예: D:/test.xlsx 또는 D:/test.txt): ");
+                    inputFilePath = scanner.nextLine();
                     System.out.print("복사할 파일명과 경로 입력 (예: D:/output/sorted.xlsx 또는 D:/output/sorted.txt): ");
                     outputDirPath = scanner.nextLine();
                     if (inputFilePath.endsWith(".xlsx")) {
                         // sortFields: 정렬할 필드순서 ("name" : 0 , "incomeDate" : 1) => "0","1"
                         // isAscending: 오름차순/내림차순 설정 (true: 오름차순, false: 내림차순)
-                        List<String> sortFields = Arrays.asList("0", "1");
-                        List<Boolean> isAscending = Arrays.asList(true, true); // 이름과 날짜는 오름차순 정렬
-                        List<String[]> excelData2 =  fmu.sortExelFile(inputFilePath , sortFields, isAscending ); //파일자체 조회
-                        fmu.copySortExcelFile(excelData2, outputDirPath );
+                    	sortFields = Arrays.asList("0", "1");
+                        isAscending = Arrays.asList(true, true); // 이름과 날짜는 오름차순 정렬
+                        excelData =  fmu.sortExelFile(inputFilePath , sortFields, isAscending ); //파일자체 조회
+                        fmu.copySortExcelFile(excelData, outputDirPath );
                     } else if (inputFilePath.endsWith(".txt")) {
                         txtData = fmu.sortTxtFile(inputFilePath);
                         fmu.copySortTxtFile(txtData, outputDirPath);
@@ -69,20 +86,97 @@ public class FileManagerUi {
                         System.out.println("지원되지 않는 파일 형식입니다.");
                     }
                     break;
+                
                 case 4:
+                	//이자
+                	List<String[]> excelData1 = null; //입금정보
+                	List<String[]> excelData2 = null; //이자정보
+                	ArrayList<String> txtData1 = null; //입금정보
+                	ArrayList<String> txtData2 = null; //이자정보
                 	
-                	/* 추가 변경 사항
-                	 * 1. 파일 소트 메소들 사용해서 List<String> 타입으로 받아오는것 실행 엑셀이던 파일이던 수행 입금데이터/이자데이터 받기 
-                	 * 2. 해당데이터 두개로 결과물 만들기
-                	 * 3. 파일만들기 호출 txt || execl 선택가능
-                	 */
                 	System.out.println("입금데이터엑셀 파일명과 경로 입력 (예: D:/test.xlsx)");
                 	String incomefileName = scanner.nextLine();
-                	System.out.println("이자데이터엑셀 파일명과 경로 입력 (예: D:/test1.xlsx)");
+                    System.out.print("복사할 파일명과 경로 입력 (예: D:/output/sorted.xlsx 또는 D:/output/sorted.txt): ");
+                    outputDirPath = scanner.nextLine();
+                   
+                    if (incomefileName.endsWith(".xlsx")) {
+                        // sortFields: 정렬할 필드순서 ("name" : 0 , "incomeDate" : 1) => "0","1"
+                        // isAscending: 오름차순/내림차순 설정 (true: 오름차순, false: 내림차순)
+                    	sortFields = Arrays.asList("0", "1");
+                        isAscending = Arrays.asList(true, true); // 이름과 날짜는 오름차순 정렬
+                        excelData1 =  fmu.sortExelFile(incomefileName , sortFields, isAscending ); //파일자체 조회
+                        fmu.copySortExcelFile(excelData1, outputDirPath );
+                    } else if (incomefileName.endsWith(".txt")) {
+                        txtData1 = fmu.sortTxtFile(incomefileName);
+                        fmu.copySortExcelFile(excelData1, outputDirPath );
+                    } else {
+                        System.out.println("지원되지 않는 파일 형식입니다.");
+                    }
+                	
+                    System.out.println("이자데이터엑셀 파일명과 경로 입력 (예: D:/test1.xlsx)");
                 	String ratefileName = scanner.nextLine();
-                	System.out.println("결과물 파일 타입을 결정해 주세요 (예: TXT | EXCEL) ");
+                    if (ratefileName.endsWith(".xlsx")) {
+                        // sortFields: 정렬할 필드순서 ("name" : 0 , "incomeDate" : 1) => "0","1"
+                        // isAscending: 오름차순/내림차순 설정 (true: 오름차순, false: 내림차순)
+                    	sortFields = Arrays.asList("0", "1");
+                        isAscending = Arrays.asList(true, true); // 이름과 날짜는 오름차순 정렬
+                        excelData2 =  fmu.sortExelFile(ratefileName , sortFields, isAscending ); //파일자체 조회
+                        fmu.copySortExcelFile(excelData2, outputDirPath );
+                    } else if (ratefileName.endsWith(".txt")) {
+                        txtData2 = fmu.sortTxtFile(ratefileName);
+                        fmu.copySortExcelFile(excelData2, outputDirPath );
+                    } else {
+                        System.out.println("지원되지 않는 파일 형식입니다.");
+                    }
+                    
+                    if(null == excelData2 && null == excelData1  ) {
+                    	System.out.println("해당데이터가 없습니다.");
+                    	break;
+                    }
+
+                    Converter convert = new Converter();
+
+                    // FileDataDTO 변환 로직 정의
+                    Function<String[], IncomeDataDTO> incomeMapper = row -> {
+                        if (row.length < 3) return null; // 데이터 부족 시 무시
+
+                        IncomeDataDTO dto = new IncomeDataDTO();
+                        dto.setName(row[0].trim());
+                        dto.setIncomeDate(row[1].trim());
+                        dto.setIncome(row[2].trim());
+                        return dto;
+                    };
+
+                    // FileDataRateInfoDTO 변환 로직 정의
+                    Function<String[], RateInfoDTO> rateMapper = row -> {
+                        if (row.length < 2) return null; // 데이터 부족 시 무시
+
+                        RateInfoDTO dto = new RateInfoDTO();
+                        dto.setRateDate(row[0].trim());
+                        dto.setRate(row[1].trim());
+                        return dto;
+                    };
+
+                    // 변환 실행
+                    List<IncomeDataDTO> incomeInfo = convert.convertToDTOList(excelData1, incomeMapper);
+                    List<RateInfoDTO> rateInfo = convert.convertToDTOList(excelData2, rateMapper);
+                    
+                    RateManagerUtil rmu = new RateManagerUtil();
+                    List<RateCulDTO> rateCulList = rmu.calculateInterest(incomeInfo, rateInfo);
+                    // 출력 확인
+                    System.out.println("Income Info:");
+                    incomeInfo.forEach(System.out::println);
+
+                    System.out.println("\nRate Info:");
+                    rateInfo.forEach(System.out::println);
+
+                    System.out.println("\nRateCul Info:");
+                    rateCulList.forEach(System.out::println);
+                	
+                    System.out.println("결과물 파일 타입을 결정해 주세요 (예: TXT | EXCEL) ");
                 	String fileType = scanner.nextLine();
-                	fmu.rateCalFile(incomefileName , ratefileName ,fileType);
+                	//fmu.rateCalFile(incomefileName , ratefileName ,fileType);
+                	fmu.saveToFile(rateCulList, fileType);
                 	break;
                 case 5:
                 	System.out.println("프로그램 종료.");
@@ -91,7 +185,6 @@ public class FileManagerUi {
                     System.out.println("잘못된 입력입니다.");
                     break;
             }
-            
         }
     }
     

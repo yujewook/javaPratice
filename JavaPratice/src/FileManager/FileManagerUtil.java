@@ -259,11 +259,23 @@ public class FileManagerUtil {
             case STRING:
                 return cell.getStringCellValue();
             case NUMERIC:
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    return cell.getDateCellValue().toString();
-                } else {
-                    return String.format("%.0f", cell.getNumericCellValue()); // 소수점 없는 문자열로 변환
-                }
+            	if (DateUtil.isCellDateFormatted(cell)) {
+            	    return cell.getDateCellValue().toString();
+            	} else {
+            	    double numericValue = cell.getNumericCellValue();
+
+            	    // 숫자가 비어있으면 빈 문자열 반환
+            	    if (Double.isNaN(numericValue)) {
+            	        return "";
+            	    }
+
+            	    // 소수점 이하 값이 존재하는지 확인
+            	    if (numericValue % 1 == 0) {
+            	        return String.format("%.0f", numericValue); // 정수로 변환
+            	    } else {
+            	        return String.format("%.2f", numericValue); // 소수점 둘째 자리까지 표시
+            	    }
+            	}
             case BOOLEAN:
                 return Boolean.toString(cell.getBooleanCellValue());
             case FORMULA:
@@ -303,6 +315,7 @@ public class FileManagerUtil {
      * 4. txt파일로 만들기
      * 5. 파일만들기 메소드 호출
      */
+    /*
     public void rateCalFile (String incomefileName, String ratefileName, String fileType) {
     	
         RateManagerUtil rmu = new RateManagerUtil();
@@ -385,7 +398,7 @@ public class FileManagerUtil {
 		}
         
     }
-
+*/
 
 
     // **엑셀 셀 값 가져오기 (숫자)**
@@ -405,7 +418,7 @@ public class FileManagerUtil {
         }
     }
     
-    //금액파일 만들기
+    //파일 만들기
     public void saveToFile(List<RateCulDTO> data, String fileType) throws IOException {
         // 오늘 날짜 구하기 (yyyyMMdd 형식)
         String today = new SimpleDateFormat("yyyyMMdd").format(new Date());

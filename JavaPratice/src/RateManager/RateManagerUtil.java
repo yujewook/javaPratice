@@ -12,11 +12,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import FileManager.FileDataDTO;
-import FileManager.FileDataRateInfoDTO;
-
 public class RateManagerUtil {
-    public List<RateCulDTO> calculateInterest(List<FileDataDTO> incomeInfo, List<FileDataRateInfoDTO> rateInfo) {
+    public List<RateCulDTO> calculateInterest(List<IncomeDataDTO> incomeInfo, List<RateInfoDTO> rateInfo) {
         
     	List<RateCulDTO> outRateList = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
@@ -24,9 +21,9 @@ public class RateManagerUtil {
         Date date = Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
         // 금리 데이터를 날짜순으로 정렬
-        rateInfo.sort(Comparator.comparing(FileDataRateInfoDTO::getRateDate));
+        rateInfo.sort(Comparator.comparing(RateInfoDTO::getRateDate));
 
-        for (FileDataDTO income : incomeInfo) {
+        for (IncomeDataDTO income : incomeInfo) {
             String currentName = income.getName();
             String incomeDate = income.getIncomeDate();
             double currentAmount = Double.parseDouble(income.getIncome());
@@ -39,7 +36,7 @@ public class RateManagerUtil {
 
             // 금리 변경 사항 처리
             for (int i = 0; i < rateInfo.size(); i++) {
-                FileDataRateInfoDTO rateData = rateInfo.get(i);
+                RateInfoDTO rateData = rateInfo.get(i);
                 String rateDate = rateData.getRateDate();
 
                 // 입금일 이전의 금리는 건너뜀
@@ -98,9 +95,9 @@ public class RateManagerUtil {
     }
 
     // 입금일 이전의 금리를 찾음
-    private double getPreviousApplicableRate(List<FileDataRateInfoDTO> rateInfo, String incomeDate) {
+    private double getPreviousApplicableRate(List<RateInfoDTO> rateInfo, String incomeDate) {
         for (int i = rateInfo.size() - 1; i >= 0; i--) {
-            FileDataRateInfoDTO rateData = rateInfo.get(i);
+            RateInfoDTO rateData = rateInfo.get(i);
             if (rateData.getRateDate().compareTo(incomeDate) <= 0) {
                 return Double.parseDouble(rateData.getRate());
             }
