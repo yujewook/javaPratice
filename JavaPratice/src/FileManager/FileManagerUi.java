@@ -108,7 +108,7 @@ public class FileManagerUi {
                         fmu.copySortExcelFile(excelData1, outputDirPath );
                     } else if (incomefileName.endsWith(".txt")) {
                         txtData1 = fmu.sortTxtFile(incomefileName);
-                        fmu.copySortExcelFile(excelData1, outputDirPath );
+                        fmu.copySortTxtFile(txtData1, outputDirPath );
                     } else {
                         System.out.println("지원되지 않는 파일 형식입니다.");
                     }
@@ -124,7 +124,7 @@ public class FileManagerUi {
                         fmu.copySortExcelFile(excelData2, outputDirPath );
                     } else if (ratefileName.endsWith(".txt")) {
                         txtData2 = fmu.sortTxtFile(ratefileName);
-                        fmu.copySortExcelFile(excelData2, outputDirPath );
+                        fmu.copySortTxtFile(txtData2, outputDirPath );
                     } else {
                         System.out.println("지원되지 않는 파일 형식입니다.");
                     }
