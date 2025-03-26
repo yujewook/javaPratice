@@ -90,8 +90,8 @@ public class FileManagerUi {
                 	//이자
                 	List<String[]> excelData1 = null; //입금정보
                 	List<String[]> excelData2 = null; //이자정보
-                	ArrayList<String> txtData1 = null; //입금정보
-                	ArrayList<String> txtData2 = null; //이자정보
+                	ArrayList<String> txtData1 = new ArrayList<String>(); //입금정보
+                	ArrayList<String> txtData2 = new ArrayList<String>(); //이자정보
                 	
                 	System.out.println("입금데이터엑셀 파일명과 경로 입력 (예: D:/test.xlsx)");
                 	String incomefileName = scanner.nextLine();
@@ -105,6 +105,17 @@ public class FileManagerUi {
                         isAscending = Arrays.asList(true, true); // 이름과 날짜는 오름차순 정렬
                         excelData1 =  fmu.sortExelFile(incomefileName , sortFields, isAscending ); //파일자체 조회
                         fmu.copySortExcelFile(excelData1, fd.getOutputDirPath() );
+                        if (fd.getOutputDirPath().endsWith(".xlsx")) {
+                        	fmu.copySortExcelFile(excelData1, fd.getOutputDirPath() );
+                        } else {
+                        	for (String[] row : excelData1) {
+                        		System.out.println(row);
+                        	    // 예시: 각 행에서 첫 번째 값만 txtData1에 추가
+                        	    txtData1.add(row[0]); // 첫 번째 열의 데이터를 추가1
+                        	}
+                        	fmu.copySortTxtFile(txtData1, fd.getOutputDirPath() );
+                        }
+                        
                     } else if (incomefileName.endsWith(".txt")) {
                         txtData1 = fmu.sortTxtFile(incomefileName);
                         fmu.copySortTxtFile(txtData1, fd.getOutputDirPath() );
@@ -114,13 +125,24 @@ public class FileManagerUi {
                 	
                     System.out.println("이자데이터엑셀 파일명과 경로 입력 (예: D:/test1.xlsx)");
                 	String ratefileName = scanner.nextLine();
+                    System.out.print("복사할 파일명과 경로 입력 (예: D:/output/sorted.xlsx 또는 D:/output/sorted.txt): ");
+                    fd.setOutputDirPath(scanner.nextLine());
                     if (ratefileName.endsWith(".xlsx")) {
                         // sortFields: 정렬할 필드순서 ("name" : 0 , "incomeDate" : 1) => "0","1"
                         // isAscending: 오름차순/내림차순 설정 (true: 오름차순, false: 내림차순)
                     	sortFields = Arrays.asList("0", "1");
                         isAscending = Arrays.asList(true, true); // 이름과 날짜는 오름차순 정렬
                         excelData2 =  fmu.sortExelFile(ratefileName , sortFields, isAscending ); //파일자체 조회
-                        fmu.copySortExcelFile(excelData2, fd.getOutputDirPath() );
+                        
+                        if (fd.getOutputDirPath().endsWith(".xlsx")) {
+                        	fmu.copySortExcelFile(excelData2, fd.getOutputDirPath() );
+                        } else {
+                        	for (String[] row : excelData2) {
+                        	    // 예시: 각 행에서 첫 번째 값만 txtData1에 추가
+                        	    txtData2.add(row[0]); // 첫 번째 열의 데이터를 추가
+                        	}
+                        	fmu.copySortTxtFile(txtData2, fd.getOutputDirPath() );
+                        }
                     } else if (ratefileName.endsWith(".txt")) {
                         txtData2 = fmu.sortTxtFile(ratefileName);
                         fmu.copySortTxtFile(txtData2, fd.getOutputDirPath() );

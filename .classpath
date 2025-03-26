@@ -16,5 +16,6 @@
 	<classpathentry kind="lib" path="C:/Users/jw/Documents/jarFile/poi-bin-4.1.2-20200217/poi-4.1.2/lib/commons-compress-1.19.jar"/>
 	<classpathentry kind="lib" path="C:/Users/jw/Documents/jarFile/poi-bin-4.1.2-20200217/poi-4.1.2/ooxml-lib/curvesapi-1.06.jar"/>
 	<classpathentry kind="lib" path="C:/Users/jw/Documents/jarFile/poi-bin-4.1.2-20200217/poi-4.1.2/ooxml-lib/xmlbeans-3.1.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jw/Downloads/pdfbox-app-2.0.33.jar"/>
 	<classpathentry kind="output" path="JavaPratice/bin"/>
 </classpath>
