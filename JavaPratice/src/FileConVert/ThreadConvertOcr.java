@@ -23,21 +23,21 @@ public class ThreadConvertOcr {
         System.setProperty("file.encoding", "UTF-8");
         Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
 
-        System.out.println("OCR를 적용할 PDF 파일이 있는 폴더 경로를 입력하세요: ");
+        System.out.println("PDF filedir : ex D:\\output  ");
         String inputFolderPath = scanner.nextLine().trim();
 
-        System.out.println("OCR 변환된 PDF를 저장할 폴더 경로를 입력하세요: ");
+        System.out.println("save dir : ex D:\\output  ");
         String outputFolderPath = scanner.nextLine().trim();
 
         File inputFolder = new File(inputFolderPath);
         if (!inputFolder.exists() || !inputFolder.isDirectory()) {
-            System.err.println("입력 폴더가 존재하지 않거나 유효하지 않습니다.");
+            System.err.println("notvalided");
             return;
         }
 
         File[] pdfFiles = inputFolder.listFiles((dir, name) -> name.toLowerCase().endsWith(".pdf"));
         if (pdfFiles == null || pdfFiles.length == 0) {
-            System.err.println("PDF 파일이 존재하지 않습니다.");
+            System.err.println("PDF not extist");
             return;
         }
 
