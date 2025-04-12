@@ -3,7 +3,6 @@ package FileConVert;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 
@@ -14,50 +13,33 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 public class JpgToPDF {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
 
-        // »ç¿ëÀÚ·ÎºÎÅÍ ÀÔ·Â °æ·Î ¹Ş±â
-        System.out.print("JPG ÆÄÀÏÀÌ ÀÖ´Â Æú´õ °æ·Î¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
-        String inputDir = scanner.nextLine().trim();
-
-        System.out.print("PDF ÆÄÀÏÀ» ÀúÀåÇÒ Æú´õ °æ·Î¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
-        String outputDir = scanner.nextLine().trim();
-
-        scanner.close();
-
-        // ÀÔ·Â Æú´õ À¯È¿¼º °Ë»ç
+    public void convert(String inputDir, String outputDir) throws IOException {
         File folder = new File(inputDir);
-        if (!folder.exists() || !folder.isDirectory()) {
-            System.out.println("À¯È¿ÇÑ Æú´õ °æ·Î°¡ ¾Æ´Õ´Ï´Ù.");
-            return;
-        }
+        File[] imageFiles = folder.listFiles(file -> {
+            try {
+                return file.isFile() && file.getName().toLowerCase().matches(".*\\.(jpg|jpeg)");
+            } catch (Exception e) {
+                System.err.println("íŒŒì¼ í•„í„° ì¤‘ ì˜¤ë¥˜ ë°œìƒ: " + e.getMessage());
+                return false;
+            }
+        });
 
-        // JPG -> PDF º¯È¯ ½ÇÇà
-        try {
-            convertJpgToPdf(inputDir, outputDir);
-            System.out.println("¸ğµç JPG ÆÄÀÏÀÌ PDF·Î º¯È¯µÇ¾ú½À´Ï´Ù!");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void convertJpgToPdf(String inputDir, String outputDir) throws IOException {
-        File folder = new File(inputDir);
-        File[] imageFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".jpg"));
-
+        System.out.println("ì…ë ¥ ê²½ë¡œ í™•ì¸: " + inputDir);
+        System.out.println("íŒŒì¼ ì¡´ì¬ ì—¬ë¶€: " + folder.exists());
+        System.out.println("ë””ë ‰í† ë¦¬ ì—¬ë¶€: " + folder.isDirectory());
         if (imageFiles == null || imageFiles.length == 0) {
-            System.out.println("JPG ÆÄÀÏÀÌ ¾ø½À´Ï´Ù.");
+            System.out.println("JPG íŒŒì¼ì´ ì—†ìŠµë‹ˆë‹¤. ê²½ë¡œ: " + folder.getAbsolutePath());
             return;
         }
 
         for (File imageFile : imageFiles) {
-            String baseName = imageFile.getName().replaceAll("(?i)\\.jpg$", "");
-            String outputPdf = outputDir + "/" + "Ä£ÀıÇÑ SQL"+ baseName + ".pdf";
+            String baseName = imageFile.getName().replaceAll("(?i)\\.jpe?g$", "");
+            String outputPdf = outputDir + File.separator + baseName + ".pdf";
 
             try (PDDocument document = new PDDocument()) {
                 BufferedImage image = ImageIO.read(imageFile);
-                PDImageXObject pdImage = PDImageXObject.createFromFile(imageFile.getAbsolutePath(), document);
+                PDImageXObject pdImage = PDImageXObject.createFromFileByContent(imageFile, document);
 
                 PDPage page = new PDPage(new PDRectangle(image.getWidth(), image.getHeight()));
                 document.addPage(page);
@@ -67,9 +49,8 @@ public class JpgToPDF {
                 }
 
                 document.save(outputPdf);
-                System.out.println("º¯È¯ ¿Ï·á: " + outputPdf);
+                System.out.println("ë³€í™˜ ì™„ë£Œ: " + outputPdf);
             }
         }
     }
-
 }
