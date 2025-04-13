@@ -70,9 +70,9 @@ public class PdfOCRConverter {
 
             for (int i = 0; i < document.getNumberOfPages(); i++) {
                 try {
-                    BufferedImage image = pdfRenderer.renderImageWithDPI(i, 300);
-                    File tempImageFile = File.createTempFile("ocr_page_" + i, ".png");
-                    ImageIO.write(image, "png", tempImageFile);
+                    BufferedImage image = pdfRenderer.renderImageWithDPI(i, 150);
+                    File tempImageFile = File.createTempFile("ocr_page_" + i, ".jpg");
+                    ImageIO.write(image, "jpg", tempImageFile);
 
                     File tempOutputFile = File.createTempFile("ocr_output_" + i, ".txt");
                     String outputBase = tempOutputFile.getAbsolutePath().replaceFirst("\\.txt$", "");

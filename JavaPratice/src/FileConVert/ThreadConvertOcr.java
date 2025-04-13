@@ -129,12 +129,12 @@ public class ThreadConvertOcr {
 
     private static void processPageOCR(PDFRenderer pdfRenderer, int pageIndex, ConcurrentLinkedQueue<File> tempPdfFiles) {
         try {
-            BufferedImage image = pdfRenderer.renderImageWithDPI(pageIndex, 300);
-            File tempImageFile = File.createTempFile("ocr_page_" + pageIndex, ".png");
-            ImageIO.write(image, "png", tempImageFile);
+            BufferedImage image = pdfRenderer.renderImageWithDPI(pageIndex, 150); // 용량 줄이기
+            File tempImageFile = File.createTempFile("ocr_page_" + pageIndex, ".jpg"); // JPG로 저장
+            ImageIO.write(image, "jpg", tempImageFile);
 
-            File tempOutputFile = File.createTempFile("ocr_output_" + pageIndex, ".pdf");
-            String outputBase = tempOutputFile.getAbsolutePath().replaceFirst("\\.pdf$", "");
+            File tempOutputFile = File.createTempFile("ocr_output_" + pageIndex, ".txt");
+            String outputBase = tempOutputFile.getAbsolutePath().replaceFirst("\\.txt$", "");
 
             ProcessBuilder pb = new ProcessBuilder(
                     TESSERACT_CMD,
@@ -144,7 +144,14 @@ public class ThreadConvertOcr {
                     "pdf"
             );
             pb.redirectErrorStream(true);
-            pb.start().waitFor();
+            Process process = pb.start();
+
+            boolean finished = process.waitFor(3, TimeUnit.MINUTES);
+            if (!finished) {
+                process.destroy();
+                System.err.println("⏰ OCR 타임아웃 발생 (페이지 " + pageIndex + ")");
+                return;
+            }
 
             File ocrResultFile = new File(outputBase + ".pdf");
             if (ocrResultFile.exists()) {
@@ -152,7 +159,10 @@ public class ThreadConvertOcr {
             } else {
                 System.err.println("OCR 변환된 PDF를 찾을 수 없습니다: 페이지 " + (pageIndex + 1));
             }
-            tempImageFile.delete();
+
+            tempImageFile.deleteOnExit();  // 변환 후 자동 삭제
+            tempOutputFile.deleteOnExit();
+
         } catch (Exception e) {
             System.err.println("페이지 OCR 변환 중 오류 발생: " + e.getMessage());
         }
