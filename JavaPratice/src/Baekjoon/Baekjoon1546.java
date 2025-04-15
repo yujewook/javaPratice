@@ -7,7 +7,7 @@ import java.util.Scanner;
 //output
 //75.0
 
-class Bacjun1546 {
+class Baekjoon1546 {
     public static void main(String[] args) {
     	Scanner sc = new Scanner(System.in);
     	int n = sc.nextInt();

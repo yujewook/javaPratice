@@ -31,7 +31,7 @@ import java.util.Scanner;
  * - 3중 for문으로 3장씩 골라서 조건 검사하면 됨
  */
 
-class Bacjun2798 {
+class Baekjoon2798 {
 	public static void main(String[] args) {
     	Scanner sc = new Scanner(System.in);
     	//카드갯수
