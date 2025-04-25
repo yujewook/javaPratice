@@ -103,7 +103,7 @@ public class PdfUiManager {
     	String outputPath = scanner.nextLine().trim();
     	
     	try {
-    		PdfOCRConverterMultiThreaded converter = new PdfOCRConverterMultiThreaded();
+    		PdfToTextViaImage converter = new PdfToTextViaImage();
     		converter.run(inputPath,outputPath);
     	} catch (Exception e) {
     		System.err.println("멀티스레드 OCR 변환 중 오류 발생: " + e.getMessage());
