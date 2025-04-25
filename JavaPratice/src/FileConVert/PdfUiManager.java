@@ -18,7 +18,8 @@ public class PdfUiManager {
 		    System.out.println("4. OCR 적용 (멀티 스레드)");
 		    System.out.println("5. OCR 적용 (멀티 스레드/병합된파일용)");
 		    System.out.println("6. PDF 분할");
-		    System.out.println("7. 종료");
+		    System.out.println("7. png/이미지 ocr pdf로 변환");
+		    System.out.println("8. 종료");
 		    System.out.print("메뉴를 선택하세요 (1~7): ");
             String choice = scanner.nextLine().trim();
 
@@ -29,7 +30,8 @@ public class PdfUiManager {
                 case "4" -> runPdfOcrMulti();
                 case "5" -> runPdfOCRConverterMultiThreaded();
                 case "6" -> runPdfSplit(); // ⬅ 추가
-                case "7" -> {
+                case "7" -> runPngOcrToPdf(); // ⬅ 추가
+                case "8" -> {
                     System.out.println("프로그램을 종료합니다.");
                     return;
                 }
@@ -132,4 +134,18 @@ public class PdfUiManager {
         }
     }
 
+    private void runPngOcrToPdf() {
+        System.out.println("OCR 처리할 PNG 이미지 경로를 입력하세요: ");
+        String inputPath = scanner.nextLine().trim();
+
+        System.out.println("OCR 결과 PDF 저장 경로를 입력하세요: ");
+        String outputPath = scanner.nextLine().trim();
+
+        try {
+            PngOcrToPdfConverter converter = new PngOcrToPdfConverter();
+            converter.run(inputPath, outputPath);
+        } catch (Exception e) {
+            System.err.println("PNG OCR 변환 중 오류 발생: " + e.getMessage());
+        }
+    }
 }
