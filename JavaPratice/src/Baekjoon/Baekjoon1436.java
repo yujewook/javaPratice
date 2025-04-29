@@ -27,20 +27,59 @@ public class Baekjoon1436 {
     public static void main(String[] args) {
         // 여기에 코드 작성하면 돼
     	Scanner sc = new Scanner(System.in);
-    	int rank = 2; // sc.nextInt();
+    	int rank = sc.nextInt();
+    	sc.close();
+    	
     	String num = "666";
     	int flag = 0;
     	int a = 0;
-    	for (int N = 1 ; N < 10001 ; N++) {
+    	for (int N = 1 ; N <= 10000 ; N++) {
  
     		String ex = String.valueOf(N);
-    		if (num.contentEquals(ex)) {
-    			flag++;
-    			if(flag == rank) {
-    				break;
-    			}
-    		};
+    		if (ex.length() >= 3) {
+        		if (ex.charAt(ex.length()-1) == num.charAt(num.length()-1) &&
+            			ex.charAt(ex.length()-2) == num.charAt(num.length()-2) &&
+            			ex.charAt(ex.length()-3) == num.charAt(num.length()-3)) {
+            			flag++;
+            			if(flag == rank) {
+            				System.out.println(ex);
+            				break;
+            			}
+            		};
+    		}
     	}
     }
 
 }
+
+/*
+ *
+ package Baekjoon;
+
+import java.util.Scanner;
+
+public class Baekjoon1436 {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int rank = sc.nextInt();
+        sc.close();
+        
+        int count = 0;
+        int num = 666;
+        
+        while (true) {
+            if (String.valueOf(num).contains("666")) {
+                count++;
+                if (count == rank) {
+                    System.out.println(num);
+                    break;
+                }
+            }
+            num++;
+        }
+    }
+
+}
+
+ */
